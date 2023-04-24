@@ -24,7 +24,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Run HTML Lint
+      - name: Run HTML Lint 
         uses: nitayneeman/html-linter-action@v1.1
 
   deploy:
