@@ -1,4 +1,4 @@
-name: Pipeline para Build, Test e Deploy de Aplicação Web
+name: Deploy da página HTML
 
 on:
   push:
@@ -12,38 +12,38 @@ jobs:
       - name: Checkout do repositório
         uses: actions/checkout@v2
 
-      - name: Login no Docker Hub
-        uses: docker/login-action@v1
+      - name: Build da imagem Docker
+        uses: docker/build-push-action@v2
         with:
-          username: ${{secrets.DOCKERHUB_USER}}
-          password: ${{secrets.DOCKERHUB_PWD}}
+          context: .
+          push: false
+          tags: ${{ github.repository }}:latest
 
   test:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Run SAST Analysis via Semgrep
-        uses: returntocorp/semgrep-action@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          config: python.lang.security.yaml
+      - name: Run HTML Lint
+        uses: nitayneeman/html-linter-action@v1.1
 
   deploy:
-    name: Deploy da Aplicação
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout do repositório
-        uses: actions/checkout@v2
-
       - name: Login no Docker Hub
         uses: docker/login-action@v1
         with:
-          username: ${{secrets.DOCKERHUB_USER}}
-          password: ${{secrets.DOCKERHUB_PWD}}
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PWD }}
 
-      - name: Push da imagem para o Docker Hub
-        run: docker push ${{secrets.DOCKERHUB_USER}}/nova-imagem
+      - name: Push da imagem Docker para Docker Hub
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USER }}/deusabencoe_html:latest
 
-      - name: Rodar a Aplicação
-        run: docker run -it -d imagem-nova:latest
+      - name: Deploy da aplicação com Docker Compose
+        uses: docker/compose-action@v2
+        with:
+          compose-file: docker-compose.yml
