@@ -17,8 +17,8 @@ jobs:
         with:
           context: .
           push: false
-          tags: ${{ secrets.DOCKERHUB_PWD }}
-           ${{ secrets.DOCKERHUB_USER }}imagem-nova:latest
+          tags: |
+            ${{ secrets.DOCKERHUB_USER }}/imagem-nova:latest
 
   test:
     needs: build
